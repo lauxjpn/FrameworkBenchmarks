@@ -8,6 +8,7 @@ namespace PlatformBenchmarks
         None,
         SqlServer,
         PostgreSql,
-        MySql
+        MySql,
+        MariaDb,
     }
 }

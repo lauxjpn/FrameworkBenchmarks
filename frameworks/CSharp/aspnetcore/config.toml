@@ -31,6 +31,7 @@ orm = "Raw"
 platform = ".NET"
 webserver = "Kestrel"
 versus = "aspcore-ado-my"
+tags = ["MySqlConnector"]
 
 [ado-my-oc]
 urls.db = "/db"
@@ -47,6 +48,24 @@ orm = "Raw"
 platform = ".NET"
 webserver = "Kestrel"
 versus = "aspcore-ado-my-oc"
+tags = ["Connector/NET"]
+
+[ado-ma]
+urls.db = "/db"
+urls.query = "/queries/"
+urls.update = "/updates/"
+urls.fortune = "/fortunes"
+urls.cached_query = "/cached-worlds/"
+approach = "Realistic"
+classification = "Platform"
+database = "MariaDB"
+database_os = "Linux"
+os = "Linux"
+orm = "Raw"
+platform = ".NET"
+webserver = "Kestrel"
+versus = "aspcore-ado-ma"
+tags = ["MySqlConnector"]
 
 [mw-ef-pg]
 urls.db = "/db/ef"

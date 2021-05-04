@@ -33,16 +33,17 @@ namespace PlatformBenchmarks
             {
                 BenchmarkApplication.Db = new RawDb(NpgsqlFactory.Instance, new ConcurrentRandom(), appSettings);
             }
-            else if (appSettings.Database == DatabaseServer.MySql)
+            else if (string.Equals(appSettings.Provider, "oracle", StringComparison.OrdinalIgnoreCase) &&
+                appSettings.Database is DatabaseServer.MySql or
+                                        DatabaseServer.MariaDb)
             {
-                if (string.Equals(appSettings.Provider, "oracle", StringComparison.OrdinalIgnoreCase))
-                {
-                    BenchmarkApplication.Db = new RawDb(MySqlClientFactory.Instance, new ConcurrentRandom(), appSettings);
-                }
-                else
-                {
-                    BenchmarkApplication.Db = new RawDb(MySqlConnectorFactory.Instance, new ConcurrentRandom(), appSettings);
-                }
+                BenchmarkApplication.Db = new RawDb(MySqlClientFactory.Instance, new ConcurrentRandom(), appSettings);
+            }
+            else if (!string.Equals(appSettings.Provider, "oracle", StringComparison.OrdinalIgnoreCase) &&
+                     appSettings.Database is DatabaseServer.MySql or
+                                             DatabaseServer.MariaDb)
+            {
+                BenchmarkApplication.Db = new RawDb(MySqlConnectorFactory.Instance, new ConcurrentRandom(), appSettings);
             }
             else
             {

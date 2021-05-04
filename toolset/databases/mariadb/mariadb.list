@@ -1,0 +1,4 @@
+# You may comment out entries below, but any other modifications may be lost.
+# Use command 'dpkg-reconfigure mysql-apt-config' as root for modifications.
+deb [arch=amd64,arm64,ppc64el] http://sfo1.mirrors.digitalocean.com/mariadb/repo/10.5/ubuntu bionic main
+deb-src http://sfo1.mirrors.digitalocean.com/mariadb/repo/10.5/ubuntu bionic main
