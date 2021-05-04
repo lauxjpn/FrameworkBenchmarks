@@ -2,13 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
-#if DATABASE
-using Npgsql;
-#endif
 
 namespace PlatformBenchmarks
 {
@@ -44,28 +40,13 @@ namespace PlatformBenchmarks
         public static IWebHost BuildWebHost(string[] args)
         {
             var config = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
-                .AddEnvironmentVariables()
+                .AddJsonFile("hosting.json", optional: true)
                 .AddEnvironmentVariables(prefix: "ASPNETCORE_")
                 .AddCommandLine(args)
                 .Build();
 
-            var appSettings = config.Get<AppSettings>();
-#if DATABASE
-            Console.WriteLine($"Database: {appSettings.Database}");
-            Console.WriteLine($"ConnectionString: {appSettings.ConnectionString}");
-
-            if (appSettings.Database == DatabaseServer.PostgreSql)
-            {
-                BenchmarkApplication.Db = new RawDb(new ConcurrentRandom(), appSettings);
-            }
-            else
-            {
-                throw new NotSupportedException($"{appSettings.Database} is not supported");
-            }
-#endif
-
             var host = new WebHostBuilder()
+                .UseStartup<Startup>()
                 .UseBenchmarksConfiguration(config)
                 .UseKestrel((context, options) =>
                 {
@@ -76,7 +57,6 @@ namespace PlatformBenchmarks
                         builder.UseHttpApplication<BenchmarkApplication>();
                     });
                 })
-                .UseStartup<Startup>()
                 .Build();
 
             return host;
