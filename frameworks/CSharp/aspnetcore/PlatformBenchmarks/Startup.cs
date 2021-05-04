@@ -5,6 +5,7 @@ using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using MySql.Data.MySqlClient;
 using MySqlConnector;
 using Npgsql;
 
@@ -34,7 +35,14 @@ namespace PlatformBenchmarks
             }
             else if (appSettings.Database == DatabaseServer.MySql)
             {
-                BenchmarkApplication.Db = new RawDb(MySqlConnectorFactory.Instance, new ConcurrentRandom(), appSettings);
+                if (string.Equals(appSettings.Provider, "oracle", StringComparison.OrdinalIgnoreCase))
+                {
+                    BenchmarkApplication.Db = new RawDb(MySqlClientFactory.Instance, new ConcurrentRandom(), appSettings);
+                }
+                else
+                {
+                    BenchmarkApplication.Db = new RawDb(MySqlConnectorFactory.Instance, new ConcurrentRandom(), appSettings);
+                }
             }
             else
             {
