@@ -2,13 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Net;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 #if DATABASE
 using Npgsql;
+using MySqlConnector;
 #endif
 
 namespace PlatformBenchmarks
@@ -63,7 +62,11 @@ namespace PlatformBenchmarks
 
             if (appSettings.Database == DatabaseServer.PostgreSql)
             {
-                BenchmarkApplication.Db = new RawDb(new ConcurrentRandom(), appSettings);
+                BenchmarkApplication.Db = new RawDb(NpgsqlFactory.Instance, new ConcurrentRandom(), appSettings);
+            }
+            else if (appSettings.Database == DatabaseServer.MySql)
+            {
+                BenchmarkApplication.Db = new RawDb(MySqlConnectorFactory.Instance, new ConcurrentRandom(), appSettings);
             }
             else
             {
