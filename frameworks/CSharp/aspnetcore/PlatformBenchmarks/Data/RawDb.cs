@@ -153,52 +153,61 @@ namespace PlatformBenchmarks
 
         public async Task<World[]> LoadMultipleUpdatesRows(int count)
         {
-            var results = new World[count];
-            
-            using (var db = _providerFactory.CreateConnection())
+            Console.Write(".");
+            try
             {
-                db.ConnectionString = _connectionString;
-                await db.OpenAsync();
-
-                var (queryCmd, queryParameter) = CreateReadCommand(db);
-                using (queryCmd)
+                var results = new World[count];
+            
+                using (var db = _providerFactory.CreateConnection())
                 {
-                    for (int i = 0; i < results.Length; i++)
+                    db.ConnectionString = _connectionString;
+                    await db.OpenAsync();
+
+                    var (queryCmd, queryParameter) = CreateReadCommand(db);
+                    using (queryCmd)
                     {
-                        results[i] = await ReadSingleRow(queryCmd);
-                        queryParameter.Value = _random.Next(1, 10001);
+                        for (int i = 0; i < results.Length; i++)
+                        {
+                            results[i] = await ReadSingleRow(queryCmd);
+                            queryParameter.Value = _random.Next(1, 10001);
+                        }
                     }
-                }
                 
-                using (var updateCmd = db.CreateCommand())
-                {
-                    updateCmd.CommandText = BatchUpdateString.Query(count);
-                    
-                    var ids = BatchUpdateString.Ids;
-                    var randoms = BatchUpdateString.Randoms;
-
-                    for (int i = 0; i < results.Length; i++)
+                    using (var updateCmd = db.CreateCommand())
                     {
-                        var randomNumber = _random.Next(1, 10001);
+                        updateCmd.CommandText = BatchUpdateString.Query(count);
+                    
+                        var ids = BatchUpdateString.Ids;
+                        var randoms = BatchUpdateString.Randoms;
 
-                        var parameter = updateCmd.CreateParameter();
-                        parameter.ParameterName = ids[i];
-                        parameter.Value = results[i].Id;
-                        updateCmd.Parameters.Add(parameter);
+                        for (int i = 0; i < results.Length; i++)
+                        {
+                            var randomNumber = _random.Next(1, 10001);
 
-                        parameter = updateCmd.CreateParameter();
-                        parameter.ParameterName = randoms[i];
-                        parameter.Value = randomNumber;
-                        updateCmd.Parameters.Add(parameter);
+                            var parameter = updateCmd.CreateParameter();
+                            parameter.ParameterName = ids[i];
+                            parameter.Value = results[i].Id;
+                            updateCmd.Parameters.Add(parameter);
 
-                        results[i].RandomNumber = randomNumber;
+                            parameter = updateCmd.CreateParameter();
+                            parameter.ParameterName = randoms[i];
+                            parameter.Value = randomNumber;
+                            updateCmd.Parameters.Add(parameter);
+
+                            results[i].RandomNumber = randomNumber;
+                        }
+
+                        await updateCmd.ExecuteNonQueryAsync();
                     }
-
-                    await updateCmd.ExecuteNonQueryAsync();
                 }
-            }
 
-            return results;
+                return results;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
         public async Task<List<Fortune>> LoadFortunesRows()

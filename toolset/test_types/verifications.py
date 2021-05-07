@@ -430,6 +430,7 @@ def verify_queries_count(self, tbl_name, url, concurrency=512, count=2, expected
     # Add a margin based on the number of cpu cores
     queries_margin = 1.015  # For a run on Travis
     if multiprocessing.cpu_count() > 2:
+        log('MORE THAN 2 CPUs!')
         queries_margin = 1  # real run (Citrine or Azure) -> no margin on queries
         # Check for transactions failures (socket errors...)
         if trans_failures > 0:
@@ -447,6 +448,7 @@ def verify_queries_count(self, tbl_name, url, concurrency=512, count=2, expected
         bulk_margin = 1
         if isBulk:  # Special marge for bulk queries
             bulk_margin = 1.05
+        log("rows_updated: %s, bulk_margin: %s, expected_rows: %s, margin: %s" % (rows_updated, bulk_margin, expected_rows, margin))
         problems.append(
             display_queries_count_result(rows_updated * bulk_margin, expected_rows, int(rows_updated / margin),
                                          "rows updated", url))
