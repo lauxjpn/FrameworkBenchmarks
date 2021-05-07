@@ -148,42 +148,52 @@ namespace PlatformBenchmarks
 
         public async Task<World[]> LoadMultipleUpdatesRows(int count)
         {
-            var results = new World[count];
-
-            using (var db = new NpgsqlConnection(_connectionString))
+            try
             {
-                await db.OpenAsync();
+                var results = new World[count];
 
-                var (queryCmd, queryParameter) = CreateReadCommand(db);
-                using (queryCmd)
+                using (var db = new NpgsqlConnection(_connectionString))
                 {
-                    for (int i = 0; i < results.Length; i++)
+                    await db.OpenAsync();
+
+                    var (queryCmd, queryParameter) = CreateReadCommand(db);
+                    using (queryCmd)
                     {
-                        results[i] = await ReadSingleRow(queryCmd);
-                        queryParameter.TypedValue = _random.Next(1, 10001);
+                        for (int i = 0; i < results.Length; i++)
+                        {
+                            results[i] = await ReadSingleRow(queryCmd);
+                            queryParameter.TypedValue = _random.Next(1, 10001);
+                        }
+                    }
+
+                    using (var updateCmd = new NpgsqlCommand(BatchUpdateString.Query(count), db))
+                    {
+                        var ids = BatchUpdateString.Ids;
+                        var randoms = BatchUpdateString.Randoms;
+
+                        for (int i = 0; i < results.Length; i++)
+                        {
+                            var randomNumber = _random.Next(1, 10001);
+
+                            updateCmd.Parameters.Add(new NpgsqlParameter<int>(parameterName: ids[i], value: results[i].Id));
+                            updateCmd.Parameters.Add(new NpgsqlParameter<int>(parameterName: randoms[i], value: randomNumber));
+
+                            results[i].RandomNumber = randomNumber;
+                        }
+
+                        Console.WriteLine(updateCmd.CommandText);
+
+                        await updateCmd.ExecuteNonQueryAsync();
                     }
                 }
 
-                using (var updateCmd = new NpgsqlCommand(BatchUpdateString.Query(count), db))
-                {
-                    var ids = BatchUpdateString.Ids;
-                    var randoms = BatchUpdateString.Randoms;
-
-                    for (int i = 0; i < results.Length; i++)
-                    {
-                        var randomNumber = _random.Next(1, 10001);
-
-                        updateCmd.Parameters.Add(new NpgsqlParameter<int>(parameterName: ids[i], value: results[i].Id));
-                        updateCmd.Parameters.Add(new NpgsqlParameter<int>(parameterName: randoms[i], value: randomNumber));
-
-                        results[i].RandomNumber = randomNumber;
-                    }
-
-                    await updateCmd.ExecuteNonQueryAsync();
-                }
+                return results;
             }
-
-            return results;
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                throw;
+            }
         }
 
         public async Task<List<Fortune>> LoadFortunesRows()

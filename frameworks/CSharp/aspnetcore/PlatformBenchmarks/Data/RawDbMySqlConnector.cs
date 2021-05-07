@@ -145,42 +145,52 @@ namespace PlatformBenchmarks
 
         public async Task<World[]> LoadMultipleUpdatesRows(int count)
         {
-            var results = new World[count];
-
-            using (var db = new MySqlConnection(_connectionString))
+            try
             {
-                await db.OpenAsync();
+                var results = new World[count];
 
-                var (queryCmd, queryParameter) = CreateReadCommand(db);
-                using (queryCmd)
+                using (var db = new MySqlConnection(_connectionString))
                 {
-                    for (int i = 0; i < results.Length; i++)
+                    await db.OpenAsync();
+
+                    var (queryCmd, queryParameter) = CreateReadCommand(db);
+                    using (queryCmd)
                     {
-                        results[i] = await ReadSingleRow(queryCmd);
-                        queryParameter.Value = _random.Next(1, 10001);
+                        for (int i = 0; i < results.Length; i++)
+                        {
+                            results[i] = await ReadSingleRow(queryCmd);
+                            queryParameter.Value = _random.Next(1, 10001);
+                        }
+                    }
+
+                    using (var updateCmd = new MySqlCommand(BatchUpdateString.Query(count), db))
+                    {
+                        var ids = BatchUpdateString.Ids;
+                        var randoms = BatchUpdateString.Randoms;
+
+                        for (int i = 0; i < results.Length; i++)
+                        {
+                            var randomNumber = _random.Next(1, 10001);
+
+                            updateCmd.Parameters.Add(new MySqlParameter(ids[i], results[i].Id));
+                            updateCmd.Parameters.Add(new MySqlParameter(randoms[i], randomNumber));
+
+                            results[i].RandomNumber = randomNumber;
+                        }
+
+                        Console.WriteLine(updateCmd.CommandText);
+
+                        await updateCmd.ExecuteNonQueryAsync();
                     }
                 }
 
-                using (var updateCmd = new MySqlCommand(BatchUpdateString.Query(count), db))
-                {
-                    var ids = BatchUpdateString.Ids;
-                    var randoms = BatchUpdateString.Randoms;
-
-                    for (int i = 0; i < results.Length; i++)
-                    {
-                        var randomNumber = _random.Next(1, 10001);
-
-                        updateCmd.Parameters.Add(new MySqlParameter(ids[i], results[i].Id));
-                        updateCmd.Parameters.Add(new MySqlParameter(randoms[i], randomNumber));
-
-                        results[i].RandomNumber = randomNumber;
-                    }
-
-                    await updateCmd.ExecuteNonQueryAsync();
-                }
+                return results;    
             }
-
-            return results;
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                throw;
+            }
         }
 
         public async Task<List<Fortune>> LoadFortunesRows()

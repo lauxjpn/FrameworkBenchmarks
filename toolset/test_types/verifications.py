@@ -422,7 +422,14 @@ def verify_queries_count(self, tbl_name, url, concurrency=512, count=2, expected
                                                                                                           count,
                                                                                                           check_updates)
 
+    log("verify_queries()")
+    log("queries: %s, rows: %s, rows_updated: %s, margin: %s, trans_failures: %s" % (queries, rows, rows_updated, margin, trans_failures))
+    log("-----")
+    log("check_updates: %s, queries: %s, expected_queries: %s, (queries < 1.001 * expected_queries): (%s < %s), (queries > 0.999 * expected_queries): (%s > %s)" % (check_updates, queries, expected_queries, queries, (1.001 * expected_queries), queries, (0.999 * expected_queries)))
     isBulk = check_updates and (queries < 1.001 * expected_queries) and (queries > 0.999 * expected_queries)
+    log("isBulk: %s" % (isBulk))
+    log(".")
+    log(".")
 
     if check_updates and not isBulk:  # Restore the normal queries number if bulk queries are not used
         expected_queries = (expected_queries - count * concurrency) * 2

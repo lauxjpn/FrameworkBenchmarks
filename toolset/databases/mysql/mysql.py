@@ -9,7 +9,7 @@ from toolset.databases.abstract_database import AbstractDatabase
 
 class Database(AbstractDatabase):
 
-    margin = 1.015
+    #margin = 1.0 # 1.015
 
     @classmethod
     def get_connection(cls, config):
@@ -55,7 +55,8 @@ class Database(AbstractDatabase):
         res = 0
         records = cursor.fetchall()
         for row in records:
-            res = res + int(int(row[1]) * cls.margin)
+            #res = res + int(int(row[1]) * cls.margin)
+            res = res + int(row[1])
         return res
 
     @classmethod
@@ -66,7 +67,8 @@ class Database(AbstractDatabase):
                         (SELECT variable_value FROM PERFORMANCE_SCHEMA.SESSION_STATUS where Variable_name like 'Innodb_rows_read') r,
                         (SELECT variable_value FROM PERFORMANCE_SCHEMA.SESSION_STATUS where Variable_name like 'Innodb_rows_updated') u""")
         record = cursor.fetchone()
-        return int(int(record[0]) * cls.margin) #Mysql lowers the number of rows read
+        #return int(int(record[0]) * cls.margin) #Mysql lowers the number of rows read
+        return int(record[0])
 
     @classmethod
     def get_rows_updated(cls, config):
@@ -74,7 +76,8 @@ class Database(AbstractDatabase):
         cursor = db.cursor()
         cursor.execute("show session status like 'Innodb_rows_updated'")
         record = cursor.fetchone()
-        return int(int(record[1]) * cls.margin) #Mysql lowers the number of rows updated
+        #return int(int(record[1]) * cls.margin) #Mysql lowers the number of rows updated
+        return int(record[1])
 
     @classmethod
     def reset_cache(cls, config):
