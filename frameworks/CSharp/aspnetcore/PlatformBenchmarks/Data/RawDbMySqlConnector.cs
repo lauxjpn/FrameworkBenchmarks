@@ -160,26 +160,31 @@ namespace PlatformBenchmarks
                         queryParameter.Value = _random.Next(1, 10001);
                     }
                 }
-
-                using (var updateCmd = new MySqlCommand(BatchUpdateString.Query(count), db))
+                
+                using (var updateCmd = new MySqlCommand("UPDATE world SET randomnumber = @Random WHERE id = @Id;", db))
                 {
-                    var ids = BatchUpdateString.Ids;
-                    var randoms = BatchUpdateString.Randoms;
+#if DEBUG
+                    Console.WriteLine(updateCmd.CommandText);
+#endif
+                    var idParameter = new MySqlParameter("@Id", 0);
+                    updateCmd.Parameters.Add(idParameter);
 
+                    var randomParameter = new MySqlParameter("@Random", 0);
+                    updateCmd.Parameters.Add(randomParameter);
+                    
+                    await updateCmd.PrepareAsync();
+                    
                     for (int i = 0; i < results.Length; i++)
                     {
                         var randomNumber = _random.Next(1, 10001);
 
-                        updateCmd.Parameters.Add(new MySqlParameter(ids[i], results[i].Id));
-                        updateCmd.Parameters.Add(new MySqlParameter(randoms[i], randomNumber));
+                        idParameter.Value = results[i].Id;
+                        randomParameter.Value = randomNumber;
 
                         results[i].RandomNumber = randomNumber;
+                        
+                        await updateCmd.ExecuteNonQueryAsync();
                     }
-                    
-#if DEBUG
-                    Console.WriteLine(updateCmd.CommandText);
-#endif
-                    await updateCmd.ExecuteNonQueryAsync();
                 }
             }
 
