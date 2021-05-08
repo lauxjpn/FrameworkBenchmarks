@@ -431,6 +431,8 @@ def verify_queries_count(self, tbl_name, url, concurrency=512, count=2, expected
     log(".")
     log(".")
 
+    isBulk = True
+
     if check_updates and not isBulk:  # Restore the normal queries number if bulk queries are not used
         expected_queries = (expected_queries - count * concurrency) * 2
 

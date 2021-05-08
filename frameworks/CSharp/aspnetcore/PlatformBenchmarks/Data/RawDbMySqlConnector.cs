@@ -178,9 +178,27 @@ namespace PlatformBenchmarks
                             results[i].RandomNumber = randomNumber;
                         }
 
-                        Console.WriteLine(updateCmd.CommandText);
+                        //Console.WriteLine(updateCmd.CommandText);
 
-                        await updateCmd.ExecuteNonQueryAsync();
+                        // var j = 0;
+                        // while (true)
+                        // {
+                        //     try
+                        //     {
+                                await updateCmd.ExecuteNonQueryAsync();
+                            //     break;
+                            // }
+                            // catch (MySqlException ex) when (ex.ErrorCode == MySqlErrorCode.LockDeadlock)
+                            // {
+                            //     if (++j < 99)
+                            //     {
+                            //         Console.WriteLine("Deadlocked, repeat...");
+                            //         continue;
+                            //     }
+                                
+                            //     throw;
+                            // }
+                        // }
                     }
                 }
 
