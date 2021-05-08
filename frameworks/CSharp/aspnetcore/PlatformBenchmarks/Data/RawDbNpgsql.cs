@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -148,52 +149,45 @@ namespace PlatformBenchmarks
 
         public async Task<World[]> LoadMultipleUpdatesRows(int count)
         {
-            try
+            var results = new World[count];
+
+            using (var db = new NpgsqlConnection(_connectionString))
             {
-                var results = new World[count];
+                await db.OpenAsync();
 
-                using (var db = new NpgsqlConnection(_connectionString))
+                var (queryCmd, queryParameter) = CreateReadCommand(db);
+                using (queryCmd)
                 {
-                    await db.OpenAsync();
-
-                    var (queryCmd, queryParameter) = CreateReadCommand(db);
-                    using (queryCmd)
+                    for (int i = 0; i < results.Length; i++)
                     {
-                        for (int i = 0; i < results.Length; i++)
-                        {
-                            results[i] = await ReadSingleRow(queryCmd);
-                            queryParameter.TypedValue = _random.Next(1, 10001);
-                        }
-                    }
-
-                    using (var updateCmd = new NpgsqlCommand(BatchUpdateString.Query(count), db))
-                    {
-                        var ids = BatchUpdateString.Ids;
-                        var randoms = BatchUpdateString.Randoms;
-
-                        for (int i = 0; i < results.Length; i++)
-                        {
-                            var randomNumber = _random.Next(1, 10001);
-
-                            updateCmd.Parameters.Add(new NpgsqlParameter<int>(parameterName: ids[i], value: results[i].Id));
-                            updateCmd.Parameters.Add(new NpgsqlParameter<int>(parameterName: randoms[i], value: randomNumber));
-
-                            results[i].RandomNumber = randomNumber;
-                        }
-
-                        //Console.WriteLine(updateCmd.CommandText);
-
-                        await updateCmd.ExecuteNonQueryAsync();
+                        results[i] = await ReadSingleRow(queryCmd);
+                        queryParameter.TypedValue = _random.Next(1, 10001);
                     }
                 }
 
-                return results;
+                using (var updateCmd = new NpgsqlCommand(BatchUpdateString.Query(count), db))
+                {
+                    var ids = BatchUpdateString.Ids;
+                    var randoms = BatchUpdateString.Randoms;
+
+                    for (int i = 0; i < results.Length; i++)
+                    {
+                        var randomNumber = _random.Next(1, 10001);
+
+                        updateCmd.Parameters.Add(new NpgsqlParameter<int>(parameterName: ids[i], value: results[i].Id));
+                        updateCmd.Parameters.Add(new NpgsqlParameter<int>(parameterName: randoms[i], value: randomNumber));
+
+                        results[i].RandomNumber = randomNumber;
+                    }
+
+#if DEBUG
+                    Console.WriteLine(updateCmd.CommandText);
+#endif
+                    await updateCmd.ExecuteNonQueryAsync();
+                }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                throw;
-            }
+
+            return results;
         }
 
         public async Task<List<Fortune>> LoadFortunesRows()
@@ -205,15 +199,21 @@ namespace PlatformBenchmarks
                 await db.OpenAsync();
 
                 using (var cmd = new NpgsqlCommand("SELECT id, message FROM fortune", db))
-                using (var rdr = await cmd.ExecuteReaderAsync())
                 {
-                    while (await rdr.ReadAsync())
+#if DEBUG
+                    Console.WriteLine(cmd.CommandText);
+#endif
+                    using (var rdr = await cmd.ExecuteReaderAsync())
                     {
-                        result.Add(new Fortune
-                        (
-                            id:rdr.GetInt32(0),
-                            message: rdr.GetString(1)
-                        ));
+                        while (await rdr.ReadAsync())
+                        {
+                            result.Add(
+                                new Fortune
+                                (
+                                    id: rdr.GetInt32(0),
+                                    message: rdr.GetString(1)
+                                ));
+                        }
                     }
                 }
             }
@@ -237,7 +237,10 @@ namespace PlatformBenchmarks
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private async Task<World> ReadSingleRow(NpgsqlCommand cmd)
         {
-            using (var rdr = await cmd.ExecuteReaderAsync(System.Data.CommandBehavior.SingleRow))
+#if DEBUG
+            Console.WriteLine(cmd.CommandText);
+#endif
+            using (var rdr = await cmd.ExecuteReaderAsync(CommandBehavior.SingleRow))
             {
                 await rdr.ReadAsync();
 

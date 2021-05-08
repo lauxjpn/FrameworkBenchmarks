@@ -28,23 +28,29 @@ namespace Benchmarks.Data
 
         public Task<World> LoadSingleQueryRow()
         {
+#if TRYCATCH
             try
             {
+#endif
                 var id = _random.Next(1, 10001);
 
                 return _firstWorldQuery(_dbContext, id);
+#if TRYCATCH
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
                 throw;
             }
+#endif
         }
 
         public async Task<World[]> LoadMultipleQueriesRows(int count)
         {
+#if TRYCATCH
             try
             {
+#endif
                 var result = new World[count];
 
                 for (var i = 0; i < count; i++)
@@ -55,12 +61,14 @@ namespace Benchmarks.Data
                 }
 
                 return result;
+#if TRYCATCH
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
                 throw;
             }
+#endif
         }
 
         private static readonly Func<ApplicationDbContext, int, Task<World>> _firstWorldTrackedQuery
@@ -69,8 +77,10 @@ namespace Benchmarks.Data
 
         public async Task<World[]> LoadMultipleUpdatesRows(int count)
         {
+#if TRYCATCH
             try
             {
+#endif
                 var results = new World[count];
                 int currentValue, newValue;
 
@@ -96,12 +106,14 @@ namespace Benchmarks.Data
                 await _dbContext.SaveChangesAsync();
 
                 return results;
+#if TRYCATCH
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
                 throw;
             }
+#endif
         }
 
         private static readonly Func<ApplicationDbContext, IAsyncEnumerable<Fortune>> _fortunesQuery
@@ -109,8 +121,10 @@ namespace Benchmarks.Data
 
         public async Task<List<Fortune>> LoadFortunesRows()
         {
+#if TRYCATCH
             try
             {
+#endif
                 var result = new List<Fortune>();
 
                 await foreach (var element in _fortunesQuery(_dbContext))
@@ -122,12 +136,14 @@ namespace Benchmarks.Data
                 result.Sort();
 
                 return result;
+#if TRYCATCH
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
                 throw;
             }
+#endif
         }
     }
 }

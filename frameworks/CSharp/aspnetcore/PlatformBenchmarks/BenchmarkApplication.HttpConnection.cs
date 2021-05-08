@@ -170,8 +170,19 @@ namespace PlatformBenchmarks
 
                     if (_state == State.Body)
                     {
-                        await ProcessRequestAsync();
-
+#if TRYCATCH
+                        try
+                        {
+#endif
+                            await ProcessRequestAsync();
+#if TRYCATCH
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                            throw;
+                        }
+#endif
                         _state = State.StartLine;
 
                         if (!buffer.IsEmpty)

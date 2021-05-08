@@ -4,10 +4,16 @@
     <TargetFramework>net5.0</TargetFramework>
     <OutputType>Exe</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <IsDatabase>true</IsDatabase>
+    <WithTryCatch>true</WithTryCatch>
   </PropertyGroup>
-  
+
   <PropertyGroup>
     <DefineConstants Condition=" '$(IsDatabase)' == 'true' ">$(DefineConstants);DATABASE</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <DefineConstants Condition=" '$(WithTryCatch)' == 'true' ">$(DefineConstants);TRYCATCH</DefineConstants>
   </PropertyGroup>
   
   <ItemGroup>

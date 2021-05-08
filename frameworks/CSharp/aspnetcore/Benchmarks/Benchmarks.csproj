@@ -3,6 +3,14 @@
     <TargetFramework>net5.0</TargetFramework>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
+  
+  <PropertyGroup>
+    <WithTryCatch>true</WithTryCatch>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <DefineConstants Condition=" '$(WithTryCatch)' == 'true' ">$(DefineConstants);TRYCATCH</DefineConstants>
+  </PropertyGroup>
 
   <ItemGroup>
     <None Update="wwwroot/**" CopyToOutputDirectory="PreserveNewest" />

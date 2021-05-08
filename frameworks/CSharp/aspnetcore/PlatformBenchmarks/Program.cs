@@ -41,6 +41,9 @@ namespace PlatformBenchmarks
         {
             var config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
+#if DEBUG
+                .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", optional: true)
+#endif
                 .AddEnvironmentVariables()
                 .AddEnvironmentVariables(prefix: "ASPNETCORE_")
                 .AddCommandLine(args)

@@ -35,6 +35,9 @@ namespace Benchmarks.Data
 
                 using (var cmd = CreateReadCommand(db))
                 {
+#if DEBUG
+                    Console.WriteLine(cmd.CommandText);
+#endif
                     return await ReadSingleRow(db, cmd);
                 }
             }
@@ -81,6 +84,9 @@ namespace Benchmarks.Data
                 {
                     for (int i = 0; i < count; i++)
                     {
+#if DEBUG
+                        Console.WriteLine(cmd.CommandText);
+#endif
                         result[i] = await ReadSingleRow(db, cmd);
                         cmd.Parameters["@Id"].Value = _random.Next(1, 10001);
                     }
@@ -103,6 +109,9 @@ namespace Benchmarks.Data
                     var results = new World[count];
                     for (int i = 0; i < count; i++)
                     {
+#if DEBUG
+                        Console.WriteLine(queryCmd.CommandText);
+#endif
                         results[i] = await ReadSingleRow(db, queryCmd);
                         queryCmd.Parameters["@Id"].Value = _random.Next(1, 10001);
                     }
@@ -127,6 +136,9 @@ namespace Benchmarks.Data
                         results[i].RandomNumber = randomNumber;
                     }
 
+#if DEBUG
+                    Console.WriteLine(updateCmd.CommandText);
+#endif
                     await updateCmd.ExecuteNonQueryAsync();
                     return results;
                 }
@@ -145,6 +157,9 @@ namespace Benchmarks.Data
                 db.ConnectionString = _connectionString;
                 await db.OpenAsync();
 
+#if DEBUG
+                Console.WriteLine(cmd.CommandText);
+#endif
                 (cmd as MySqlConnector.MySqlCommand)?.Prepare();
 
                 using (var rdr = await cmd.ExecuteReaderAsync(CommandBehavior.CloseConnection))
