@@ -179,6 +179,7 @@ namespace PlatformBenchmarks
 #if DEBUG
                     Console.WriteLine(updateCmd.CommandText);
 #endif
+                    await updateCmd.PrepareAsync();
                     await updateCmd.ExecuteNonQueryAsync();
                 }
             }
