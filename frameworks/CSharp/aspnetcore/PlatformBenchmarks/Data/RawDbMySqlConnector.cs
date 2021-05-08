@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using MySqlConnector;
@@ -161,21 +162,25 @@ namespace PlatformBenchmarks
                     }
                 }
 
-                using (var updateCmd = new MySqlCommand(BatchUpdateString.Query(count), db))
+                var sb = new StringBuilder(count * 64);
+                using (var updateCmd = db.CreateCommand()) // new MySqlCommand(BatchUpdateString.Query(count), db)
                 {
-                    var ids = BatchUpdateString.Ids;
-                    var randoms = BatchUpdateString.Randoms;
+                    //var ids = BatchUpdateString.Ids;
+                    //var randoms = BatchUpdateString.Randoms;
 
                     for (int i = 0; i < results.Length; i++)
                     {
                         var randomNumber = _random.Next(1, 10001);
 
-                        updateCmd.Parameters.Add(new MySqlParameter(ids[i], results[i].Id));
-                        updateCmd.Parameters.Add(new MySqlParameter(randoms[i], randomNumber));
+                        //updateCmd.Parameters.Add(new MySqlParameter(ids[i], results[i].Id));
+                        //updateCmd.Parameters.Add(new MySqlParameter(randoms[i], randomNumber));
+
+                        sb.Append($"UPDATE world SET randomnumber = {randomNumber} WHERE id = {results[i].Id}; ");
 
                         results[i].RandomNumber = randomNumber;
                     }
-                    
+
+                    updateCmd.CommandText = sb.ToString();
 #if DEBUG
                     Console.WriteLine(updateCmd.CommandText);
 #endif
@@ -238,7 +243,7 @@ namespace PlatformBenchmarks
         private async Task<World> ReadSingleRow(MySqlCommand cmd)
         {
 #if DEBUG
-            Console.WriteLine(cmd.CommandText);
+            //Console.WriteLine(cmd.CommandText);
 #endif
             using (var rdr = await cmd.ExecuteReaderAsync(System.Data.CommandBehavior.SingleRow))
             {
