@@ -168,6 +168,8 @@ namespace PlatformBenchmarks
                     //var ids = BatchUpdateString.Ids;
                     //var randoms = BatchUpdateString.Randoms;
 
+                    sb.Append($"UPDATE world SET randomnumber = CASE id ");
+                    
                     for (int i = 0; i < results.Length; i++)
                     {
                         var randomNumber = _random.Next(1, 10001);
@@ -175,10 +177,21 @@ namespace PlatformBenchmarks
                         //updateCmd.Parameters.Add(new MySqlParameter(ids[i], results[i].Id));
                         //updateCmd.Parameters.Add(new MySqlParameter(randoms[i], randomNumber));
 
-                        sb.Append($"UPDATE world SET randomnumber = {randomNumber} WHERE id = {results[i].Id}; ");
+                        sb.Append($"WHEN {results[i].Id} THEN {randomNumber} ");
 
                         results[i].RandomNumber = randomNumber;
                     }
+
+                    sb.Append("END WHERE id IN (");
+
+                    for (int i = 0; i < results.Length - 1; i++)
+                    {
+                        sb.Append(results[i].Id)
+                            .Append(", ");
+                    }
+
+                    sb.Append(results[^1].Id)
+                        .Append(")");
 
                     updateCmd.CommandText = sb.ToString();
 #if DEBUG
