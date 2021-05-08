@@ -70,9 +70,9 @@ namespace Benchmarks
                         options => options
                             .UseNpgsql(appSettings.ConnectionString)
 #if DEBUG
-                            .LogTo(Console.WriteLine, LogLevel.Information))
+                            .LogTo(Console.WriteLine, LogLevel.Information)
 #endif
-                        ;
+                    );
                 }
                 
                 if (Scenarios.Any("Raw") || Scenarios.Any("Dapper"))
@@ -87,9 +87,9 @@ namespace Benchmarks
                     services.AddDbContextPool<ApplicationDbContext>(options => options
                         .UseMySql(appSettings.ConnectionString, ServerVersion.AutoDetect(appSettings.ConnectionString))
 #if DEBUG
-                        .LogTo(Console.WriteLine, LogLevel.Information))
+                        .LogTo(Console.WriteLine, LogLevel.Information)
 #endif
-                        ;
+                    );
                 }
                 
                 if (Scenarios.Any("Raw") || Scenarios.Any("Dapper"))

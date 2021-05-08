@@ -210,7 +210,7 @@ namespace PlatformBenchmarks
                             results[i].RandomNumber = randomNumber;
                         }
 
-                        Console.WriteLine(updateCmd.CommandText);
+                        //Console.WriteLine(updateCmd.CommandText);
 
                         await updateCmd.ExecuteNonQueryAsync();
                     }
