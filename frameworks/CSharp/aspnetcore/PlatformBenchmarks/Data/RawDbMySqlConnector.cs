@@ -28,119 +28,151 @@ namespace PlatformBenchmarks
 
         public async Task<World> LoadSingleQueryRow()
         {
-            using (var db = new MySqlConnection(_connectionString))
+            try
             {
-                await db.OpenAsync();
-
-                var (cmd, _) = CreateReadCommand(db);
-                using (cmd)
+                using (var db = new MySqlConnection(_connectionString))
                 {
-                    return await ReadSingleRow(cmd);
+                    await db.OpenAsync();
+
+                    var (cmd, _) = CreateReadCommand(db);
+                    using (cmd)
+                    {
+                        return await ReadSingleRow(cmd);
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                System.Console.WriteLine(e);
+                throw;
             }
         }
 
         public async Task<World[]> LoadMultipleQueriesRows(int count)
         {
-            var result = new World[count];
-
-            using (var db = new MySqlConnection(_connectionString))
+            try
             {
-                await db.OpenAsync();
+                var result = new World[count];
 
-                var (cmd, idParameter) = CreateReadCommand(db);
-                using (cmd)
-                {
-                    for (int i = 0; i < result.Length; i++)
-                    {
-                        result[i] = await ReadSingleRow(cmd);
-                        idParameter.Value = _random.Next(1, 10001);
-                    }
-                }
-            }
-
-            return result;
-        }
-
-        public Task<World[]> LoadCachedQueries(int count)
-        {
-            var result = new World[count];
-            var cacheKeys = _cacheKeys;
-            var cache = _cache;
-            var random = _random;
-            for (var i = 0; i < result.Length; i++)
-            {
-                var id = random.Next(1, 10001);
-                var key = cacheKeys[id];
-                var data = cache.Get<CachedWorld>(key);
-
-                if (data != null)
-                {
-                    result[i] = data;
-                }
-                else
-                {
-                    return LoadUncachedQueries(id, i, count, this, result);
-                }
-            }
-
-            return Task.FromResult(result);
-
-            static async Task<World[]> LoadUncachedQueries(int id, int i, int count, RawDbMySqlConnector rawdb, World[] result)
-            {
-                using (var db = new MySqlConnection(rawdb._connectionString))
+                using (var db = new MySqlConnection(_connectionString))
                 {
                     await db.OpenAsync();
 
-                    var (cmd, idParameter) = rawdb.CreateReadCommand(db);
+                    var (cmd, idParameter) = CreateReadCommand(db);
                     using (cmd)
                     {
-                        Func<ICacheEntry, Task<CachedWorld>> create = async (entry) =>
+                        for (int i = 0; i < result.Length; i++)
                         {
-                            return await rawdb.ReadSingleRow(cmd);
-                        };
-
-                        var cacheKeys = _cacheKeys;
-                        var key = cacheKeys[id];
-
-                        idParameter.Value = id;
-
-                        for (; i < result.Length; i++)
-                        {
-                            var data = await rawdb._cache.GetOrCreateAsync<CachedWorld>(key, create);
-                            result[i] = data;
-
-                            id = rawdb._random.Next(1, 10001);
-                            idParameter.Value = id;
-                            key = cacheKeys[id];
+                            result[i] = await ReadSingleRow(cmd);
+                            idParameter.Value = _random.Next(1, 10001);
                         }
                     }
                 }
 
                 return result;
             }
+            catch (Exception e)
+            {
+                System.Console.WriteLine(e);
+                throw;
+            }
+        }
+
+        public Task<World[]> LoadCachedQueries(int count)
+        {
+            try
+            {
+                var result = new World[count];
+                var cacheKeys = _cacheKeys;
+                var cache = _cache;
+                var random = _random;
+                for (var i = 0; i < result.Length; i++)
+                {
+                    var id = random.Next(1, 10001);
+                    var key = cacheKeys[id];
+                    var data = cache.Get<CachedWorld>(key);
+
+                    if (data != null)
+                    {
+                        result[i] = data;
+                    }
+                    else
+                    {
+                        return LoadUncachedQueries(id, i, count, this, result);
+                    }
+                }
+
+                return Task.FromResult(result);
+
+                static async Task<World[]> LoadUncachedQueries(int id, int i, int count, RawDbMySqlConnector rawdb, World[] result)
+                {
+                    using (var db = new MySqlConnection(rawdb._connectionString))
+                    {
+                        await db.OpenAsync();
+
+                        var (cmd, idParameter) = rawdb.CreateReadCommand(db);
+                        using (cmd)
+                        {
+                            Func<ICacheEntry, Task<CachedWorld>> create = async (entry) =>
+                            {
+                                return await rawdb.ReadSingleRow(cmd);
+                            };
+
+                            var cacheKeys = _cacheKeys;
+                            var key = cacheKeys[id];
+
+                            idParameter.Value = id;
+
+                            for (; i < result.Length; i++)
+                            {
+                                var data = await rawdb._cache.GetOrCreateAsync<CachedWorld>(key, create);
+                                result[i] = data;
+
+                                id = rawdb._random.Next(1, 10001);
+                                idParameter.Value = id;
+                                key = cacheKeys[id];
+                            }
+                        }
+                    }
+
+                    return result;
+                }
+            }
+            catch (Exception e)
+            {
+                System.Console.WriteLine(e);
+                throw;
+            }
         }
 
         public async Task PopulateCache()
         {
-            using (var db = new MySqlConnection(_connectionString))
+            try
             {
-                await db.OpenAsync();
-
-                var (cmd, idParameter) = CreateReadCommand(db);
-                using (cmd)
+                using (var db = new MySqlConnection(_connectionString))
                 {
-                    var cacheKeys = _cacheKeys;
-                    var cache = _cache;
-                    for (var i = 1; i < 10001; i++)
+                    await db.OpenAsync();
+
+                    var (cmd, idParameter) = CreateReadCommand(db);
+                    using (cmd)
                     {
-                        idParameter.Value = i;
-                        cache.Set<CachedWorld>(cacheKeys[i], await ReadSingleRow(cmd));
+                        var cacheKeys = _cacheKeys;
+                        var cache = _cache;
+                        for (var i = 1; i < 10001; i++)
+                        {
+                            idParameter.Value = i;
+                            cache.Set<CachedWorld>(cacheKeys[i], await ReadSingleRow(cmd));
+                        }
                     }
                 }
-            }
 
-            Console.WriteLine("Caching Populated");
+                Console.WriteLine("Caching Populated");
+            }
+            catch (Exception e)
+            {
+                System.Console.WriteLine(e);
+                throw;
+            }
         }
 
         public async Task<World[]> LoadMultipleUpdatesRows(int count)
@@ -178,65 +210,55 @@ namespace PlatformBenchmarks
                             results[i].RandomNumber = randomNumber;
                         }
 
-                        //Console.WriteLine(updateCmd.CommandText);
+                        Console.WriteLine(updateCmd.CommandText);
 
-                        // var j = 0;
-                        // while (true)
-                        // {
-                        //     try
-                        //     {
-                                await updateCmd.ExecuteNonQueryAsync();
-                            //     break;
-                            // }
-                            // catch (MySqlException ex) when (ex.ErrorCode == MySqlErrorCode.LockDeadlock)
-                            // {
-                            //     if (++j < 99)
-                            //     {
-                            //         Console.WriteLine("Deadlocked, repeat...");
-                            //         continue;
-                            //     }
-                                
-                            //     throw;
-                            // }
-                        // }
+                        await updateCmd.ExecuteNonQueryAsync();
                     }
                 }
 
                 return results;    
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                Console.WriteLine(ex);
+                Console.WriteLine(e);
                 throw;
             }
         }
 
         public async Task<List<Fortune>> LoadFortunesRows()
         {
-            var result = new List<Fortune>();
-
-            using (var db = new MySqlConnection(_connectionString))
+            try
             {
-                await db.OpenAsync();
+                var result = new List<Fortune>();
 
-                using (var cmd = new MySqlCommand("SELECT id, message FROM fortune", db))
-                using (var rdr = await cmd.ExecuteReaderAsync())
+                using (var db = new MySqlConnection(_connectionString))
                 {
-                    while (await rdr.ReadAsync())
+                    await db.OpenAsync();
+
+                    using (var cmd = new MySqlCommand("SELECT id, message FROM fortune", db))
+                    using (var rdr = await cmd.ExecuteReaderAsync())
                     {
-                        result.Add(new Fortune
-                        (
-                            id:rdr.GetInt32(0),
-                            message: rdr.GetString(1)
-                        ));
+                        while (await rdr.ReadAsync())
+                        {
+                            result.Add(new Fortune
+                            (
+                                id:rdr.GetInt32(0),
+                                message: rdr.GetString(1)
+                            ));
+                        }
                     }
                 }
+
+                result.Add(new Fortune(id: 0, message: "Additional fortune added at request time." ));
+                result.Sort();
+
+                return result;
             }
-
-            result.Add(new Fortune(id: 0, message: "Additional fortune added at request time." ));
-            result.Sort();
-
-            return result;
+            catch (Exception e)
+            {
+                System.Console.WriteLine(e);
+                throw;
+            }
         }
 
         private (MySqlCommand readCmd, MySqlParameter idParameter) CreateReadCommand(MySqlConnection connection)
@@ -252,15 +274,23 @@ namespace PlatformBenchmarks
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private async Task<World> ReadSingleRow(MySqlCommand cmd)
         {
-            using (var rdr = await cmd.ExecuteReaderAsync(System.Data.CommandBehavior.SingleRow))
+            try
             {
-                await rdr.ReadAsync();
-
-                return new World
+                using (var rdr = await cmd.ExecuteReaderAsync(System.Data.CommandBehavior.SingleRow))
                 {
-                    Id = rdr.GetInt32(0),
-                    RandomNumber = rdr.GetInt32(1)
-                };
+                    await rdr.ReadAsync();
+
+                    return new World
+                    {
+                        Id = rdr.GetInt32(0),
+                        RandomNumber = rdr.GetInt32(1)
+                    };
+                }
+            }
+            catch (Exception e)
+            {
+                System.Console.WriteLine(e);
+                throw;
             }
         }
 

@@ -9,8 +9,6 @@ from toolset.databases.abstract_database import AbstractDatabase
 
 class Database(AbstractDatabase):
 
-    #margin = 1.0 # 1.015
-
     @classmethod
     def get_connection(cls, config):
         return MySQLdb.connect(config.database_host, "benchmarkdbuser",

@@ -35,23 +35,15 @@ namespace PlatformBenchmarks
             }
             else if (DatabaseServer == DatabaseServer.MySql)
             {
-                //sb.Append("LOCK TABLE world WRITE; ");
-                
-                //sb.Append("INSERT INTO world (id, randomNumber) VALUES ");
-                //Enumerable.Range(0, lastIndex).ToList().ForEach(i => sb.Append($"(@Id_{i}, @Random_{i}), "));
-                //sb.Append($"(@Id_{lastIndex}, @Random_{lastIndex}) ON DUPLICATE KEY UPDATE randomNumber = VALUES (randomNumber); ");
-                
-                //sb.Append("UNLOCK TABLES;");
-
-
+                // sb.Append("INSERT INTO world (id, randomNumber) VALUES ");
+                // Enumerable.Range(0, lastIndex).ToList().ForEach(i => sb.Append($"(@Id_{i}, @Random_{i}), "));
+                // sb.Append($"(@Id_{lastIndex}, @Random_{lastIndex}) ON DUPLICATE KEY UPDATE randomNumber = VALUES (randomNumber)");
 
                 // sb.Append("UPDATE world SET randomNumber = CASE id ");
                 // Enumerable.Range(0, lastIndex).ToList().ForEach(i => sb.Append($"WHEN @Id_{i} THEN @Random_{i} "));
                 // sb.Append($"WHEN @Id_{lastIndex} THEN @Random_{lastIndex} END WHERE id IN (");
                 // Enumerable.Range(0, lastIndex).ToList().ForEach(i => sb.Append($"@Id_{i}, "));
                 // sb.Append($"@Id_{lastIndex})");
-
-
 
                 Enumerable.Range(0, batchSize).ToList().ForEach(i => sb.Append($"UPDATE world SET randomnumber = @Random_{i} WHERE id = @Id_{i};"));
             }

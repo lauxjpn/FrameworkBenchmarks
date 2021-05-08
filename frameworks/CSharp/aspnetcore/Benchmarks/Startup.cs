@@ -18,6 +18,10 @@ using Microsoft.Extensions.DependencyInjection;
 using MySqlConnector;
 using Npgsql;
 
+#if DEBUG
+using Microsoft.Extensions.Logging;
+#endif
+
 namespace Benchmarks
 {
     public class Startup
@@ -52,7 +56,6 @@ namespace Benchmarks
 
             // Common DB services
             services.AddSingleton<IRandom, DefaultRandom>();
-            services.AddEntityFrameworkSqlServer();
 
             var appSettings = Configuration.Get<AppSettings>();
             BatchUpdateString.DatabaseServer = appSettings.Database;
@@ -63,7 +66,13 @@ namespace Benchmarks
             {
                 if (Scenarios.Any("Ef"))
                 {
-                    services.AddDbContextPool<ApplicationDbContext>(options => options.UseNpgsql(appSettings.ConnectionString));
+                    services.AddDbContextPool<ApplicationDbContext>(
+                        options => options
+                            .UseNpgsql(appSettings.ConnectionString)
+#if DEBUG
+                            .LogTo(Console.WriteLine, LogLevel.Information))
+#endif
+                        ;
                 }
                 
                 if (Scenarios.Any("Raw") || Scenarios.Any("Dapper"))
@@ -75,7 +84,12 @@ namespace Benchmarks
             {
                 if (Scenarios.Any("Ef"))
                 {
-                    services.AddDbContextPool<ApplicationDbContext>(options => options.UseMySql(appSettings.ConnectionString, ServerVersion.AutoDetect(appSettings.ConnectionString)));
+                    services.AddDbContextPool<ApplicationDbContext>(options => options
+                        .UseMySql(appSettings.ConnectionString, ServerVersion.AutoDetect(appSettings.ConnectionString))
+#if DEBUG
+                        .LogTo(Console.WriteLine, LogLevel.Information))
+#endif
+                        ;
                 }
                 
                 if (Scenarios.Any("Raw") || Scenarios.Any("Dapper"))
@@ -86,6 +100,12 @@ namespace Benchmarks
 
             if (Scenarios.Any("Ef"))
             {
+                if (appSettings.Database == DatabaseServer.SqlServer ||
+                    appSettings.Database == DatabaseServer.None)
+                {
+                    services.AddEntityFrameworkSqlServer();
+                }
+                
                 services.AddScoped<EfDb>();
             }
 

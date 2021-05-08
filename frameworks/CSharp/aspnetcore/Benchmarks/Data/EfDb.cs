@@ -28,23 +28,39 @@ namespace Benchmarks.Data
 
         public Task<World> LoadSingleQueryRow()
         {
-            var id = _random.Next(1, 10001);
+            try
+            {
+                var id = _random.Next(1, 10001);
 
-            return _firstWorldQuery(_dbContext, id);
+                return _firstWorldQuery(_dbContext, id);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
         public async Task<World[]> LoadMultipleQueriesRows(int count)
         {
-            var result = new World[count];
-
-            for (var i = 0; i < count; i++)
+            try
             {
-                var id = _random.Next(1, 10001);
+                var result = new World[count];
 
-                result[i] = await _firstWorldQuery(_dbContext, id);
+                for (var i = 0; i < count; i++)
+                {
+                    var id = _random.Next(1, 10001);
+
+                    result[i] = await _firstWorldQuery(_dbContext, id);
+                }
+
+                return result;
             }
-
-            return result;
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
         private static readonly Func<ApplicationDbContext, int, Task<World>> _firstWorldTrackedQuery
@@ -53,31 +69,39 @@ namespace Benchmarks.Data
 
         public async Task<World[]> LoadMultipleUpdatesRows(int count)
         {
-            var results = new World[count];
-            int currentValue, newValue;
-
-            var ids = Enumerable.Range(1, 10000).Select(x => _random.Next(1, 10001)).Distinct().Take(count).ToArray();
-
-            for (var i = 0; i < count; i++)
+            try
             {
-                results[i] = await _firstWorldTrackedQuery(_dbContext, ids[i]);
+                var results = new World[count];
+                int currentValue, newValue;
 
-                currentValue = results[i].RandomNumber;
+                var ids = Enumerable.Range(1, 10000).Select(x => _random.Next(1, 10001)).Distinct().Take(count).ToArray();
 
-                do
+                for (var i = 0; i < count; i++)
                 {
-                    newValue = _random.Next(1, 10001);
+                    results[i] = await _firstWorldTrackedQuery(_dbContext, ids[i]);
+
+                    currentValue = results[i].RandomNumber;
+
+                    do
+                    {
+                        newValue = _random.Next(1, 10001);
+                    }
+                    while (newValue == currentValue);
+
+                    results[i].RandomNumber = newValue;
+
+                    _dbContext.Entry(results[i]).State = EntityState.Modified;
                 }
-                while (newValue == currentValue);
 
-                results[i].RandomNumber = newValue;
+                await _dbContext.SaveChangesAsync();
 
-                _dbContext.Entry(results[i]).State = EntityState.Modified;
+                return results;
             }
-
-            await _dbContext.SaveChangesAsync();
-
-            return results;
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
         private static readonly Func<ApplicationDbContext, IAsyncEnumerable<Fortune>> _fortunesQuery
@@ -85,17 +109,25 @@ namespace Benchmarks.Data
 
         public async Task<List<Fortune>> LoadFortunesRows()
         {
-            var result = new List<Fortune>();
-
-            await foreach (var element in _fortunesQuery(_dbContext))
+            try
             {
-                result.Add(element);
+                var result = new List<Fortune>();
+
+                await foreach (var element in _fortunesQuery(_dbContext))
+                {
+                    result.Add(element);
+                }
+
+                result.Add(new Fortune { Message = "Additional fortune added at request time." });
+                result.Sort();
+
+                return result;
             }
-
-            result.Add(new Fortune { Message = "Additional fortune added at request time." });
-            result.Sort();
-
-            return result;
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
     }
 }
