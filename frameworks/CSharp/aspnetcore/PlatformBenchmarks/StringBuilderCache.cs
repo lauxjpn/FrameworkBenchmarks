@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace PlatformBenchmarks
@@ -16,6 +17,7 @@ namespace PlatformBenchmarks
 
         /// <summary>Get a StringBuilder for the specified capacity.</summary>
         /// <remarks>If a StringBuilder of an appropriate size is cached, it will be returned and the cache emptied.</remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static StringBuilder Acquire(int capacity = DefaultCapacity)
         {
             if (capacity <= MaxBuilderSize)
@@ -41,6 +43,7 @@ namespace PlatformBenchmarks
             return new StringBuilder(capacity);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Release(StringBuilder sb)
         {
             if (sb.Capacity <= MaxBuilderSize)
@@ -49,6 +52,7 @@ namespace PlatformBenchmarks
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string GetStringAndRelease(StringBuilder sb)
         {
             string result = sb.ToString();

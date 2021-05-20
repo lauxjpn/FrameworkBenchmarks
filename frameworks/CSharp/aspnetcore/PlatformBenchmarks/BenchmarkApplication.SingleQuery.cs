@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO.Pipelines;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -9,11 +10,13 @@ namespace PlatformBenchmarks
 {
     public partial class BenchmarkApplication
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private async Task SingleQuery(PipeWriter pipeWriter)
         {
             OutputSingleQuery(pipeWriter, await Db.LoadSingleQueryRow());
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void OutputSingleQuery(PipeWriter pipeWriter, World row)
         {
             var writer = GetWriter(pipeWriter, sizeHint: 180); // in reality it's 150

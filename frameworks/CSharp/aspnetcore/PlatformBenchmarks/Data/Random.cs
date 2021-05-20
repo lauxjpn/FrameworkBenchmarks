@@ -24,6 +24,7 @@ namespace PlatformBenchmarks
             return _random;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int Next(int minValue, int maxValue)
         {
             return Random.Next(minValue, maxValue);

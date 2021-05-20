@@ -4,6 +4,7 @@
 using System;
 using System.Buffers.Text;
 using System.IO.Pipelines;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -43,7 +44,7 @@ namespace PlatformBenchmarks
         private readonly static AsciiString _fortunesRowEnd = "</td></tr>";
         private readonly static AsciiString _fortunesTableEnd = "</table></body></html>";
         private readonly static AsciiString _contentLengthGap = new string(' ', 4);
-
+        
         public static RawDb Db { get; set; }
 
         [ThreadStatic]
@@ -64,17 +65,20 @@ namespace PlatformBenchmarks
         private int _queries;
 
 #if NET5_0
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void OnStartLine(HttpVersionAndMethod versionAndMethod, TargetOffsetPathLength targetPath, Span<byte> startLine)
         {
             _requestType = versionAndMethod.Method == HttpMethod.Get ? GetRequestType(startLine.Slice(targetPath.Offset, targetPath.Length), ref _queries) : RequestType.NotRecognized;
         }
 #else
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
         {
             _requestType = method == HttpMethod.Get ? GetRequestType(path, ref _queries) : RequestType.NotRecognized;
         }
 #endif
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private RequestType GetRequestType(ReadOnlySpan<byte> path, ref int queries)
         {
 #if !DATABASE
@@ -116,6 +120,7 @@ namespace PlatformBenchmarks
 
 
 #if !DATABASE
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ProcessRequest(ref BufferWriter<WriterAdapter> writer)
         {
             if (_requestType == RequestType.PlainText)
@@ -133,6 +138,7 @@ namespace PlatformBenchmarks
         }
 #else
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int ParseQueries(ReadOnlySpan<byte> parameter)
         {
             if (!Utf8Parser.TryParse(parameter, out int queries, out _) || queries < 1)
@@ -147,6 +153,7 @@ namespace PlatformBenchmarks
             return queries;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Task ProcessRequestAsync() => _requestType switch
         {
             RequestType.Fortunes => Fortunes(Writer),
@@ -157,6 +164,7 @@ namespace PlatformBenchmarks
             _ => Default(Writer)
         };
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Task Default(PipeWriter pipeWriter)
         {
             var writer = GetWriter(pipeWriter, sizeHint: _defaultPreamble.Length + DateHeader.HeaderBytes.Length);
@@ -171,6 +179,7 @@ namespace PlatformBenchmarks
             _headerContentTypeText + _crlf +
             _headerContentLengthZero;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void Default(ref BufferWriter<WriterAdapter> writer)
         {
             writer.Write(_defaultPreamble);

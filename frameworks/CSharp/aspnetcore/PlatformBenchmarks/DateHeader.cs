@@ -4,6 +4,7 @@
 using System;
 using System.Buffers.Text;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 
@@ -26,6 +27,7 @@ namespace PlatformBenchmarks
         private static byte[] s_headerBytesMaster = new byte[prefixLength + dateTimeRLength + 2 * suffixLength];
         private static byte[] s_headerBytesScratch = new byte[prefixLength + dateTimeRLength + 2 * suffixLength];
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static DateHeader()
         {
             var utf8 = Encoding.ASCII.GetBytes("\r\nDate: ").AsSpan();
@@ -45,10 +47,12 @@ namespace PlatformBenchmarks
             SyncDateTimer();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SyncDateTimer() => s_timer.Change(1000, 1000);
 
         public static ReadOnlySpan<byte> HeaderBytes => s_headerBytesMaster;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void SetDateValues(DateTimeOffset value)
         {
             lock (s_headerBytesScratch)

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 
@@ -8,6 +9,7 @@ namespace PlatformBenchmarks
 {
     public static class HttpApplicationConnectionBuilderExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IConnectionBuilder UseHttpApplication<TConnection>(this IConnectionBuilder builder) where TConnection : IHttpConnection, new()
         {
             return builder.Use(next => new HttpApplication<TConnection>().ExecuteAsync);
@@ -16,6 +18,7 @@ namespace PlatformBenchmarks
 
     public class HttpApplication<TConnection> where TConnection : IHttpConnection, new()
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Task ExecuteAsync(ConnectionContext connection)
         {
             var httpConnection = new TConnection

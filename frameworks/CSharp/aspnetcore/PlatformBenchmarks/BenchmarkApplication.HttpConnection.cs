@@ -24,6 +24,7 @@ namespace PlatformBenchmarks
 
         private HttpParser<ParsingAdapter> Parser { get; } = new HttpParser<ParsingAdapter>();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public async Task ExecuteAsync()
         {
             try
@@ -42,6 +43,7 @@ namespace PlatformBenchmarks
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static HtmlEncoder CreateHtmlEncoder()
         {
             var settings = new TextEncoderSettings(UnicodeRanges.BasicLatin, UnicodeRanges.Katakana, UnicodeRanges.Hiragana);
@@ -50,6 +52,7 @@ namespace PlatformBenchmarks
         }
 
 #if !DATABASE
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private async Task ProcessRequestsAsync()
         {
             while (true)
@@ -72,6 +75,7 @@ namespace PlatformBenchmarks
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool HandleRequests(in ReadOnlySequence<byte> buffer, bool isCompleted)
         {
             var reader = new SequenceReader<byte>(buffer);
@@ -106,6 +110,7 @@ namespace PlatformBenchmarks
             return true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool ParseHttpRequest(ref SequenceReader<byte> reader, bool isCompleted)
         {
             var state = _state;
@@ -148,6 +153,7 @@ namespace PlatformBenchmarks
             return true;
         }
 #else
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private async Task ProcessRequestsAsync()
         {
             while (true)
@@ -190,6 +196,7 @@ namespace PlatformBenchmarks
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool ParseHttpRequest(ref ReadOnlySequence<byte> buffer, bool isCompleted)
         {
             var reader = new SequenceReader<byte>(buffer);
@@ -248,29 +255,38 @@ namespace PlatformBenchmarks
 
 #if NET5_0
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void OnStaticIndexedHeader(int index)
         {
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
         {
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void OnHeadersComplete(bool endStream)
         {
         }
 #else
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void OnHeader(Span<byte> name, Span<byte> value)
         {
         }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void OnHeadersComplete()
         {
         }
 #endif
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void ThrowUnexpectedEndOfData()
         {
             throw new InvalidOperationException("Unexpected end of data!");
@@ -291,15 +307,19 @@ namespace PlatformBenchmarks
         {
             public PipeWriter Writer;
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public WriterAdapter(PipeWriter writer)
                 => Writer = writer;
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Advance(int count)
                 => Writer.Advance(count);
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public Memory<byte> GetMemory(int sizeHint = 0)
                 => Writer.GetMemory(sizeHint);
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public Span<byte> GetSpan(int sizeHint = 0)
                 => Writer.GetSpan(sizeHint);
         }
@@ -308,29 +328,38 @@ namespace PlatformBenchmarks
         {
             public BenchmarkApplication RequestHandler;
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public ParsingAdapter(BenchmarkApplication requestHandler)
                 => RequestHandler = requestHandler;
 
 #if NET5_0
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void OnStaticIndexedHeader(int index) 
                 => RequestHandler.OnStaticIndexedHeader(index);
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
                 => RequestHandler.OnStaticIndexedHeader(index, value);
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
                 => RequestHandler.OnHeader(name, value);
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void OnHeadersComplete(bool endStream)
                 => RequestHandler.OnHeadersComplete(endStream);
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void OnStartLine(HttpVersionAndMethod versionAndMethod, TargetOffsetPathLength targetPath, Span<byte> startLine)
                 => RequestHandler.OnStartLine(versionAndMethod, targetPath, startLine);
 #else
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void OnHeader(Span<byte> name, Span<byte> value)
                 => RequestHandler.OnHeader(name, value);
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void OnHeadersComplete()
                 => RequestHandler.OnHeadersComplete();
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
                 => RequestHandler.OnStartLine(method, version, target, path, query, customMethod, pathEncoded);
 #endif

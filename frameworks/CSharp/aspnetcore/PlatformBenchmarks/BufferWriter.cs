@@ -13,6 +13,7 @@ namespace PlatformBenchmarks
         private Span<byte> _span;
         private int _buffered;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BufferWriter(T output, int sizeHint)
         {
             _buffered = 0;
@@ -78,6 +79,7 @@ namespace PlatformBenchmarks
             _span = _output.GetSpan(count);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void WriteMultiBuffer(ReadOnlySpan<byte> source)
         {
             while (source.Length > 0)

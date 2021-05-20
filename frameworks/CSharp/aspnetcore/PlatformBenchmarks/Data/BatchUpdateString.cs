@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace PlatformBenchmarks
 {
@@ -16,6 +17,7 @@ namespace PlatformBenchmarks
 
         private static string[] _queries = new string[MaxBatch + 1];
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string Query(int batchSize)
         {
             if (_queries[batchSize] != null)

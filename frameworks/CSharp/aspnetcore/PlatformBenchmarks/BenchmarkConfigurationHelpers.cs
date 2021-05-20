@@ -7,12 +7,14 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using System.IO.Pipelines;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace PlatformBenchmarks
 {
     public static class BenchmarkConfigurationHelpers
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IWebHostBuilder UseBenchmarksConfiguration(this IWebHostBuilder builder, IConfiguration configuration)
         {
             builder.UseConfiguration(configuration);
@@ -38,6 +40,7 @@ namespace PlatformBenchmarks
             return builder;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IPEndPoint CreateIPEndPoint(this IConfiguration config)
         {
             var url = config["server.urls"] ?? config["urls"];

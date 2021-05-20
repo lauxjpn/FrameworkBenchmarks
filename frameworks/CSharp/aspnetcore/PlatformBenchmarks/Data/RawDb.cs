@@ -21,12 +21,14 @@ namespace PlatformBenchmarks
                 ExpirationScanFrequency = TimeSpan.FromMinutes(60)
             });
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public RawDb(ConcurrentRandom random, AppSettings appSettings)
         {
             _random = random;
             _connectionString = appSettings.ConnectionString;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public async Task<World> LoadSingleQueryRow()
         {
             using (var db = new NpgsqlConnection(_connectionString))
@@ -41,6 +43,7 @@ namespace PlatformBenchmarks
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public async Task<World[]> LoadMultipleQueriesRows(int count)
         {
             var result = new World[count];
@@ -63,6 +66,7 @@ namespace PlatformBenchmarks
             return result;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Task<World[]> LoadCachedQueries(int count)
         {
             var result = new World[count];
@@ -87,6 +91,7 @@ namespace PlatformBenchmarks
 
             return Task.FromResult(result);
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static async Task<World[]> LoadUncachedQueries(int id, int i, int count, RawDb rawdb, World[] result)
             {
                 using (var db = new NpgsqlConnection(rawdb._connectionString))
@@ -144,6 +149,7 @@ namespace PlatformBenchmarks
             Console.WriteLine("Caching Populated");
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public async Task<World[]> LoadMultipleUpdatesRows(int count)
         {
             var results = new World[count];
@@ -184,6 +190,7 @@ namespace PlatformBenchmarks
             return results;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public async Task<List<Fortune>> LoadFortunesRows()
         {
             var result = new List<Fortune>();
@@ -212,6 +219,7 @@ namespace PlatformBenchmarks
             return result;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private (NpgsqlCommand readCmd, NpgsqlParameter<int> idParameter) CreateReadCommand(NpgsqlConnection connection)
         {
             var cmd = new NpgsqlCommand("SELECT id, randomnumber FROM world WHERE id = @Id", connection);
@@ -243,18 +251,23 @@ namespace PlatformBenchmarks
         {
             private readonly int _value;
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public CacheKey(int value)
                 => _value = value;
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool Equals(CacheKey key)
                 => key._value == _value;
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public override bool Equals(object obj)
                 => ReferenceEquals(obj, this);
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public override int GetHashCode()
                 => _value;
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public override string ToString()
                 => _value.ToString();
         }

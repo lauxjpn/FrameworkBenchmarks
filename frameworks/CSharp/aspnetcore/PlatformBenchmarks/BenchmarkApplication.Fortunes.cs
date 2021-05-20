@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.IO.Pipelines;
+using System.Runtime.CompilerServices;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 
@@ -16,11 +17,13 @@ namespace PlatformBenchmarks
             _headerContentTypeHtml + _crlf +
             _headerContentLength;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private async Task Fortunes(PipeWriter pipeWriter)
         {
             OutputFortunes(pipeWriter, await Db.LoadFortunesRows());
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void OutputFortunes(PipeWriter pipeWriter, List<Fortune> model)
         {
             var writer = GetWriter(pipeWriter, sizeHint: 1600); // in reality it's 1361

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace PlatformBenchmarks
@@ -10,29 +11,43 @@ namespace PlatformBenchmarks
     {
         private readonly byte[] _data;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public AsciiString(string s) => _data = Encoding.ASCII.GetBytes(s);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private AsciiString(byte[] b) => _data = b;
 
         public int Length => _data.Length;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ReadOnlySpan<byte> AsSpan() => _data;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator ReadOnlySpan<byte>(AsciiString str) => str._data;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator byte[] (AsciiString str) => str._data;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator AsciiString(string str) => new AsciiString(str);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override string ToString() => Encoding.ASCII.GetString(_data);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static explicit operator string(AsciiString str) => str.ToString();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(AsciiString other) => ReferenceEquals(_data, other._data) || SequenceEqual(_data, other._data);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool SequenceEqual(byte[] data1, byte[] data2) => new Span<byte>(data1).SequenceEqual(data2);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(AsciiString a, AsciiString b) => a.Equals(b);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(AsciiString a, AsciiString b) => !a.Equals(b);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool Equals(object other) => (other is AsciiString) && Equals((AsciiString)other);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static AsciiString operator +(AsciiString a, AsciiString b)
         {
             var result = new byte[a.Length + b.Length];
@@ -41,6 +56,7 @@ namespace PlatformBenchmarks
             return new AsciiString(result);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int GetHashCode()
         {
             // Copied from x64 version of string.GetLegacyNonRandomizedHashCode()

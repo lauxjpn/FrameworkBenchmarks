@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 namespace PlatformBenchmarks
@@ -17,6 +18,7 @@ namespace PlatformBenchmarks
             _headerContentTypeJson + _crlf +
             _headerContentLength + _jsonPayloadSize.ToString();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void Json(ref BufferWriter<WriterAdapter> writer, IBufferWriter<byte> bodyWriter)
         {
             writer.Write(_jsonPreamble);

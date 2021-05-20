@@ -20,6 +20,7 @@ namespace PlatformBenchmarks
         [ThreadStatic]
         private static byte[] _numericBytesScratch;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void WriteUtf8String<T>(ref this BufferWriter<T> buffer, string text)
              where T : struct, IBufferWriter<byte>
         {
