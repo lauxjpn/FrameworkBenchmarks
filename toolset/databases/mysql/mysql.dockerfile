@@ -37,10 +37,56 @@ RUN mkdir -p /var/run/mysqld
 # do not see running processes from prior RUN calls; therefor, each command here
 # that relies on the mysql server running will explicitly start the server and
 # perform the work required.
-RUN chown -R mysql:mysql /var/lib/mysql /var/log/mysql /var/run/mysqld /ssd && \
-    mysqld & \
-    until mysql -uroot -psecret -e "exit"; do sleep 1; done && \
-    mysqladmin -uroot -psecret flush-hosts && \
-    mysql -uroot -psecret < create.sql
+# RUN chown -R mysql:mysql /var/lib/mysql /var/log/mysql /var/run/mysqld /ssd && \
+#     mysqld & \
+#     until mysql -uroot -psecret -e "exit"; do sleep 1; done && \
+#     mysqladmin -uroot -psecret flush-hosts && \
+#     mysql -uroot -psecret < create.sql
 
-CMD chown -R mysql:mysql /var/lib/mysql /var/log/mysql /var/run/mysqld /ssd && mysqld
+RUN chown -R mysql:mysql /var/lib/mysql /var/log/mysql /var/run/mysqld /ssd
+
+HEALTHCHECK CMD mysqladmin --defaults-extra-file=/healthcheck.cnf ping
+
+RUN echo 'TRACE 01: Processes before start and shutdown MySQL if necessary' && \
+    ((mysqladmin processlist -uroot -psecret && mysqladmin shutdown -uroot -psecret) || true) && \
+    echo 'TRACE 02: Start MySQL' && \
+    (mysqld &) && \
+    echo 'TRACE 03: Try to connect...' && \
+    until mysqladmin ping -uroot -psecret; do sleep 1; done && \
+    echo 'TRACE 04: Processes after start' && \
+    (mysqladmin processlist -uroot -psecret || true ) && \
+    echo 'TRACE 05: Add additional local permissions' && \
+    (mysql -uroot -psecret -e "create user 'root'@'127.0.0.1' identified with caching_sha2_password BY 'secret'; grant all privileges on *.* to 'root'@'127.0.0.1';") && \
+    echo 'TRACE 06: Execute flush-privileges' && \
+    (mysqladmin flush-privileges -uroot -psecret) && \
+    echo 'TRACE 07: Execute flush-hosts' && \
+    (mysqladmin flush-hosts -uroot -psecret) && \
+    echo 'TRACE 08: Import SQL' && \
+    (mysql -uroot -psecret < create.sql) && \
+    echo 'TRACE 09: Check that socket works' && \
+    (mysql -uroot -psecret --table -e "select user, authentication_string, plugin, host FROM mysql.user") && \
+    echo 'TRACE 10: Try to connect...' && \
+    until mysqladmin ping --protocol=socket --socket=/var/run/mysqld/mysqld.sock -uroot -psecret; do sleep 1; done && \
+    echo 'TRACE 11: Processes after start (socket)' && \
+    (mysqladmin processlist --protocol=socket --socket=/var/run/mysqld/mysqld.sock -uroot -psecret || true ) && \
+    echo 'TRACE 12: Check that socket works' && \
+    (mysql --protocol=socket --socket=/var/run/mysqld/mysqld.sock -uroot -psecret --table -e "select @@version") && \
+    (mysql --protocol=socket --socket=/var/run/mysqld/mysqld.sock -uroot -psecret --table -e "select * from information_schema.schemata") && \
+    echo 'TRACE 13: Try to connect...' && \
+    until mysqladmin ping --protocol=tcp --port=3306 -uroot -psecret; do sleep 1; done && \
+    echo 'TRACE 14: Processes after start (tcp)' && \
+    (mysqladmin processlist --protocol=tcp --port=3306 -uroot -psecret || true ) && \
+    echo 'TRACE 15: Check that TCP works' && \
+    (mysql --protocol=tcp --port=3306 -uroot -psecret --table -e "select @@version" || true) && \
+    (mysql --protocol=tcp --port=3306 -uroot -psecret --table -e "select * from information_schema.schemata" || true) && \
+    echo 'TRACE 16: Try to connect (client, tcp)...' && \
+    until mysql --protocol=tcp --port=3306 -uroot -psecret -e "exit"; do sleep 1; done && \
+    echo 'TRACE 17: Check that TCP works' && \
+    (mysql --protocol=tcp --port=3306 -uroot -psecret --table -e "select @@version") && \
+    (mysql --protocol=tcp --port=3306 -uroot -psecret --table -e "select * from information_schema.schemata") && \
+    echo 'TRACE 18: Shutdown MySQL' && \
+    (mysqladmin shutdown -uroot -psecret || true)
+
+RUN chown -R mysql:mysql /var/lib/mysql /var/log/mysql /var/run/mysqld /ssd
+
+CMD ["mysqld"]
